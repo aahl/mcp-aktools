@@ -1,0 +1,21 @@
+[project]
+name = "mcp-aktools"
+version = "0.1.0"
+description = "MCP Server for aktools/akshare"
+readme = "README.md"
+requires-python = ">=3.10"
+keywords = ["aktools", "akshare", "stock", "trading", "mcp", "llm"]
+license = { text = "MIT" }
+dependencies = [
+    "akshare>=1.17.0",
+    "cachetools>=6.2.0",
+    "diskcache>=5.6.0",
+    "fastmcp>=2.0.0",
+]
+
+[project.scripts]
+mcp-aktools = "mcp_aktools:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

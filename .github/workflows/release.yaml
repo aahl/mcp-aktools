@@ -13,7 +13,8 @@ jobs:
       contents: read
     steps:
       - name: Wait for release
-        run: sleep 60
+        if: "github.event_name == 'release'"
+        run: sleep 120
 
       - uses: actions/checkout@v4
 

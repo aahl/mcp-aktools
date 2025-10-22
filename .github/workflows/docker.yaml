@@ -6,6 +6,8 @@ on:
     types: [published]
   push:
     branches: [main]
+    paths-ignore:
+      - .github/**
 
 env:
   GITHUB_CR_REPO: ghcr.io/${{ github.repository }}

@@ -6,6 +6,8 @@ on:
     types: [published]
   push:
     branches: [main]
+    paths-ignore:
+      - .github/**
 
 env:
   PYPI_PKG_NAME: mcp-aktools

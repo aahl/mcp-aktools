@@ -1,6 +1,10 @@
+import os
+import time
 import logging
 import akshare as ak
 import argparse
+import requests
+import pandas as pd
 from fastmcp import FastMCP
 from pydantic import Field
 from datetime import datetime, timedelta
@@ -12,6 +16,9 @@ mcp = FastMCP(name="mcp-aktools")
 
 field_symbol = Field(description="股票代码")
 field_market = Field("sh", description="股票市场，如: sh(上证), sz(深证), hk(港股), us(美股) 等")
+
+OKX_BASE_URL = os.getenv("OKX_BASE_URL") or "https://www.okx.com"
+BINANCE_BASE_URL = os.getenv("BINANCE_BASE_URL") or "https://www.binance.com"
 
 
 @mcp.tool(
@@ -108,22 +115,21 @@ def stock_prices(
 
 
 @mcp.tool(
-    title="获取股票相关新闻",
-    description="根据股票代码和市场获取股票近期相关新闻",
+    title="获取股票/加密货币相关新闻",
+    description="根据股票代码或关键词获取近期相关新闻",
 )
 def stock_news(
-    symbol: str = field_symbol,
-    market: str = field_market,
+    keyword: str = Field(description="关键词"),
     news_count: int = Field(15),
 ):
     news = list(dict.fromkeys([
         v["新闻内容"]
-        for v in ak_cache(ak.stock_news_em, symbol=symbol, ttl=3600).to_dict(orient="records")
+        for v in ak_cache(ak.stock_news_em, symbol=keyword, ttl=3600).to_dict(orient="records")
         if isinstance(v, dict)
     ]))
     if news:
         return "\n".join(news[0:news_count])
-    return f"Not Found for {symbol}.{market}"
+    return f"Not Found for {keyword}"
 
 
 @mcp.tool(
@@ -148,6 +154,138 @@ def stock_indicators_hk(
     dfs = ak_cache(ak.stock_financial_hk_analysis_indicator_em, symbol=symbol, indicator="报告期")
     keys = dfs.to_csv(index=False, float_format="%.3f").strip().split("\n")
     return "\n".join(keys[0:15])
+
+
+@mcp.tool(
+    title="获取加密货币历史价格",
+    description="获取OKX加密货币K线数据",
+)
+def okx_prices(
+    instId: str = Field("BTC-USDT", description="产品ID，格式: BTC-USDT"),
+    bar: str = Field("1h", description="K线时间粒度，仅支持: [1m/3m/5m/15m/30m/1H/2H/4H/6H/12H/1D/2D/3D/1W/1M/3M]"),
+    limit: int = Field(100, description="返回数量，最大300，最小建议30"),
+):
+    res = requests.get(
+        f"{OKX_BASE_URL}/api/v5/market/candles",
+        params={
+            "instId": instId,
+            "bar": bar,
+            "limit": max(300, limit + 62),
+        },
+        timeout=20,
+    )
+    data = res.json() or {}
+    dfs = pd.DataFrame(data.get("data", []))
+    if dfs.empty:
+        return pd.DataFrame()
+    dfs.columns = ["时间", "开盘", "最高", "最低", "收盘", "成交量", "成交额", "成交额USDT", "K线已完结"]
+    dfs.sort_values("时间", inplace=True)
+    dfs["时间"] = pd.to_datetime(dfs["时间"], errors="coerce", unit="ms")
+    dfs["开盘"] = pd.to_numeric(dfs["开盘"], errors="coerce")
+    dfs["最高"] = pd.to_numeric(dfs["最高"], errors="coerce")
+    dfs["最低"] = pd.to_numeric(dfs["最低"], errors="coerce")
+    dfs["收盘"] = pd.to_numeric(dfs["收盘"], errors="coerce")
+    dfs["成交量"] = pd.to_numeric(dfs["成交量"], errors="coerce")
+    dfs["成交额"] = pd.to_numeric(dfs["成交额"], errors="coerce")
+    add_technical_indicators(dfs, dfs["收盘"], dfs["最低"], dfs["最高"])
+    columns = [
+        "时间", "开盘", "收盘", "最高", "最低", "成交量", "成交额",
+        "MACD", "DIF", "DEA", "KDJ.K", "KDJ.D", "KDJ.J", "RSI", "BOLL.U", "BOLL.M", "BOLL.L",
+    ]
+    all = dfs.to_csv(columns=columns, index=False, float_format="%.2f").strip().split("\n")
+    return "\n".join([all[0], *all[-limit:]])
+
+
+@mcp.tool(
+    title="获取加密货币杠杆多空比",
+    description="获取OKX加密货币借入计价货币与借入交易货币的累计数额比值",
+)
+def okx_loan_ratios(
+    symbol: str = Field("BTC", description="币种，格式: BTC 或 ETH"),
+    period: str = Field("1h", description="时间粒度，仅支持: [5m/1H/1D]"),
+):
+    res = requests.get(
+        f"{OKX_BASE_URL}/api/v5/rubik/stat/margin/loan-ratio",
+        params={
+            "ccy": symbol,
+            "period": period,
+        },
+        timeout=20,
+    )
+    data = res.json() or {}
+    dfs = pd.DataFrame(data.get("data", []))
+    if dfs.empty:
+        return pd.DataFrame()
+    dfs.columns = ["时间", "多空比"]
+    dfs["时间"] = pd.to_datetime(dfs["时间"], errors="coerce", unit="ms")
+    dfs["多空比"] = pd.to_numeric(dfs["多空比"], errors="coerce")
+    return dfs.to_csv(index=False, float_format="%.2f").strip()
+
+
+@mcp.tool(
+    title="获取加密货币主动买卖情况",
+    description="获取OKX加密货币主动买入和卖出的交易量",
+)
+def okx_taker_volume(
+    symbol: str = Field("BTC", description="币种，格式: BTC 或 ETH"),
+    period: str = Field("1h", description="时间粒度，仅支持: [5m/1H/1D]"),
+    instType: str = Field("SPOT", description="产品类型 SPOT:现货 CONTRACTS:衍生品"),
+):
+    res = requests.get(
+        f"{OKX_BASE_URL}/api/v5/rubik/stat/taker-volume",
+        params={
+            "ccy": symbol,
+            "period": period,
+            "instType": instType,
+        },
+        timeout=20,
+    )
+    data = res.json() or {}
+    dfs = pd.DataFrame(data.get("data", []))
+    if dfs.empty:
+        return pd.DataFrame()
+    dfs.columns = ["时间", "卖出量", "买入量"]
+    dfs["时间"] = pd.to_datetime(dfs["时间"], errors="coerce", unit="ms")
+    dfs["卖出量"] = pd.to_numeric(dfs["卖出量"], errors="coerce")
+    dfs["买入量"] = pd.to_numeric(dfs["买入量"], errors="coerce")
+    return dfs.to_csv(index=False, float_format="%.2f").strip()
+
+
+@mcp.tool(
+    title="获取加密货币分析报告",
+    description="获取币安对加密货币的AI分析报告",
+)
+def binance_ai_report(
+    symbol: str = Field("BTC", description="币种，格式: BTC 或 ETH"),
+):
+    res = requests.post(
+        f"{BINANCE_BASE_URL}/bapi/bigdata/v3/friendly/bigdata/search/ai-report/report",
+        json={
+            'lang': 'zh-CN',
+            'token': symbol,
+            'symbol': f'{symbol}USDT',
+            'product': 'web-spot',
+            'timestamp': int(time.time() * 1000),
+            'translateToken': None,
+        },
+        headers={
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10) AppleWebKit/537.36 Chrome/139',
+            'Referer': f'https://www.binance.com/zh-CN/trade/{symbol}_USDT?type=spot',
+            'lang': 'zh-CN',
+        },
+        timeout=20,
+    )
+    resp = res.json() or {}
+    data = resp.get('data') or {}
+    modules = data.get('report', {}).get('translated', {}).get('modules', [])
+    txts = []
+    for module in modules:
+        if tit := module.get('overview'):
+            txts.append(tit)
+        for point in module.get('points', []):
+            txts.append(point.get('content', ''))
+    return '\n'.join(txts)
+
 
 
 def ak_cache(fun, *args, **kwargs):

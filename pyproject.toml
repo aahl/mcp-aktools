@@ -1,6 +1,6 @@
 [project]
 name = "mcp-aktools"
-version = "0.1.0"
+version = "0.1.1"
 description = "MCP Server for aktools/akshare"
 readme = "README.md"
 requires-python = ">=3.10"

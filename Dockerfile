@@ -1,5 +1,7 @@
 FROM ghcr.io/astral-sh/uv:python3.13-alpine
 
+LABEL io.modelcontextprotocol.server.name="io.github.aahl/mcp-aktools"
+
 ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app

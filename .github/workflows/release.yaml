@@ -1,0 +1,31 @@
+name: Release
+
+on:
+  workflow_dispatch:
+  release:
+    types: [published]
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write  # Required for OIDC authentication with MCP Registry
+      contents: read
+    steps:
+      - name: Wait for release
+        run: sleep 60
+
+      - uses: actions/checkout@v4
+
+      - name: Install MCP Publisher
+        #if: "!github.event.release.prerelease"
+        run: |
+          curl -L "https://github.com/modelcontextprotocol/registry/releases/download/latest/mcp-publisher_$(uname -s | tr '[:upper:]' '[:lower:]')_$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/').tar.gz" | tar xz mcp-publisher
+
+      - name: Login to MCP Registry
+        #if: "!github.event.release.prerelease"
+        run: ./mcp-publisher login github-oidc
+
+      - name: Publish to MCP Registry
+        #if: "!github.event.release.prerelease"
+        run: ./mcp-publisher publish

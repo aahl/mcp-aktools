@@ -1,4 +1,5 @@
 # 📈 AkTools MCP Server
+[![smithery badge](https://smithery.ai/badge/@aahl/mcp-aktools)](https://smithery.ai/server/@aahl/mcp-aktools)
 
 基于 akshare 的 MCP (Model Context Protocol) 服务器，提供股票、加密货币的数据查询和分析功能。
 <!-- mcp-name: io.github.aahl/mcp-aktools -->
@@ -29,6 +30,15 @@
     }
   }
 }
+```
+
+### 安装方式：通过 Smithery 安装
+
+使用 [Smithery](https://smithery.ai/server/@aahl/mcp-aktools) 来自动安装 Claude Desktop 的 MCP Aktools。
+你可以使用以下命令：
+
+```bash
+npx -y @smithery/cli install @aahl/mcp-aktools --proto claude
 ```
 
 ### 方式2: Docker

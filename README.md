@@ -15,12 +15,16 @@
 ## 安装
 
 ### 方式1: uvx
-```json
+```yaml
 {
   "mcpServers": {
     "mcp-aktools": {
       "command": "uvx",
-      "args": ["mcp-aktools"]
+      "args": ["mcp-aktools"],
+      "env": {
+        "OKX_BASE_URL": "https://okx.4url.cn", # OKX地址，如果你的网络环境无法访问okx.com，可通过此选项配置反代地址
+        "BINANCE_BASE_URL": "https://www.binance.com" # 币安地址
+      }
     }
   }
 }

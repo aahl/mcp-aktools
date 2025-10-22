@@ -1,6 +1,7 @@
 # 📈 AkTools MCP Server
 
 基于 akshare 的 MCP (Model Context Protocol) 服务器，提供股票、加密货币的数据查询和分析功能。
+<!-- mcp-name: io.github.aahl/mcp-aktools -->
 
 
 ## 功能

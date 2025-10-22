@@ -339,6 +339,7 @@ def add_technical_indicators(df, clos, lows, high):
 
 
 def main():
+    mode = os.getenv("TRANSPORT")
     port = int(os.getenv("PORT", 0)) or 80
     parser = argparse.ArgumentParser(description="AkTools MCP Server")
     parser.add_argument("--http", action="store_true", help="Use streamable HTTP mode instead of stdio")
@@ -346,7 +347,7 @@ def main():
     parser.add_argument("--port", type=int, default=port, help=f"Port to listen on (default: {port})")
 
     args = parser.parse_args()
-    if args.http:
+    if args.http or mode == "http":
         app = mcp.streamable_http_app()
         app.add_middleware(
             CORSMiddleware,

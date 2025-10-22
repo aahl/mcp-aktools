@@ -3,12 +3,16 @@
   "name": "io.github.aahl/mcp-aktools",
   "title": "AkTools MCP Server",
   "description": "MCP Server for stock and crypto",
-  "version": "0.1.2",
+  "version": "0.1.3",
+  "repository": {
+    "url": "https://github.com/aahl/mcp-aktools",
+    "source": "github"
+  },
   "packages": [
     {
       "registryType": "pypi",
       "identifier": "mcp-aktools",
-      "version": "0.1.2",
+      "version": "0.1.3",
       "transport": {"type": "stdio"}
     },
     {

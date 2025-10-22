@@ -1,0 +1,9 @@
+runtime: container
+startCommand:
+  type: http
+  configSchema:
+    type: object
+    default: {}
+build:
+  dockerfile: Dockerfile
+  dockerBuildPath: .

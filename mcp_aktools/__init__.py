@@ -8,6 +8,7 @@ import pandas as pd
 from fastmcp import FastMCP
 from pydantic import Field
 from datetime import datetime, timedelta
+from starlette.middleware.cors import CORSMiddleware
 from .cache import CacheKey
 
 _LOGGER = logging.getLogger(__name__)
@@ -162,7 +163,7 @@ def stock_indicators_hk(
 )
 def okx_prices(
     instId: str = Field("BTC-USDT", description="产品ID，格式: BTC-USDT"),
-    bar: str = Field("1h", description="K线时间粒度，仅支持: [1m/3m/5m/15m/30m/1H/2H/4H/6H/12H/1D/2D/3D/1W/1M/3M]"),
+    bar: str = Field("1h", description="K线时间粒度，仅支持: [1m/3m/5m/15m/30m/1H/2H/4H/6H/12H/1D/2D/3D/1W/1M/3M] 注意大小写，仅分钟为小写m"),
     limit: int = Field(100, description="返回数量，最大300，最小建议30"),
 ):
     res = requests.get(
@@ -202,7 +203,7 @@ def okx_prices(
 )
 def okx_loan_ratios(
     symbol: str = Field("BTC", description="币种，格式: BTC 或 ETH"),
-    period: str = Field("1h", description="时间粒度，仅支持: [5m/1H/1D]"),
+    period: str = Field("1h", description="时间粒度，仅支持: [5m/1H/1D] 注意大小写，仅分钟为小写m"),
 ):
     res = requests.get(
         f"{OKX_BASE_URL}/api/v5/rubik/stat/margin/loan-ratio",
@@ -228,7 +229,7 @@ def okx_loan_ratios(
 )
 def okx_taker_volume(
     symbol: str = Field("BTC", description="币种，格式: BTC 或 ETH"),
-    period: str = Field("1h", description="时间粒度，仅支持: [5m/1H/1D]"),
+    period: str = Field("1h", description="时间粒度，仅支持: [5m/1H/1D] 注意大小写，仅分钟为小写m"),
     instType: str = Field("SPOT", description="产品类型 SPOT:现货 CONTRACTS:衍生品"),
 ):
     res = requests.get(
@@ -338,13 +339,24 @@ def add_technical_indicators(df, clos, lows, high):
 
 
 def main():
+    port = int(os.getenv("PORT", 0)) or 80
     parser = argparse.ArgumentParser(description="AkTools MCP Server")
     parser.add_argument("--http", action="store_true", help="Use streamable HTTP mode instead of stdio")
     parser.add_argument("--host", default="0.0.0.0", help="Host to bind to (default: 0.0.0.0)")
-    parser.add_argument("--port", type=int, default=80, help="Port to listen on (default: 80)")
+    parser.add_argument("--port", type=int, default=port, help=f"Port to listen on (default: {port})")
 
     args = parser.parse_args()
     if args.http:
+        app = mcp.streamable_http_app()
+        app.add_middleware(
+            CORSMiddleware,
+            allow_origins=["*"],
+            allow_credentials=True,
+            allow_methods=["GET", "POST", "OPTIONS"],
+            allow_headers=["*"],
+            expose_headers=["mcp-session-id", "mcp-protocol-version"],
+            max_age=86400,
+        )
         mcp.run(transport="http", host=args.host, port=args.port)
     else:
         mcp.run()

@@ -24,7 +24,8 @@ BINANCE_BASE_URL = os.getenv("BINANCE_BASE_URL") or "https://www.binance.com"
 
 @mcp.tool(
     title="查找股票代码",
-    description="根据用户提供的股票名称、公司名称等关键词查找股票代码",
+    description="根据股票名称、公司名称等关键词查找股票代码。"
+                "该工具比较耗时，当你知道股票代码或用户已指定股票代码时，建议直接通过股票代码使用其他工具",
 )
 def search(
     keyword: str = Field(description="搜索关键词，公司名称、股票名称、股票代码、证券简称"),
@@ -51,7 +52,7 @@ def search(
                     continue
                 return "\n".join([v.to_string(), suffix])
             for _, v in all.iterrows():
-                name = v[m[2][1]]
+                name = str(v[m[2][1]])
                 if not name.startswith(keyword):
                     continue
                 return "\n".join([v.to_string(), suffix])
@@ -87,7 +88,7 @@ def stock_info(
 def stock_prices(
     symbol: str = field_symbol,
     market: str = field_market,
-    period: str = Field("daily", description="周期，如: daily(日线), weekly(周线)"),
+    period: str = Field("daily", description="周期，如: daily(日线), weekly(周线，不支持美股)"),
     limit: int = Field(30, description="返回数量(int)", strict=False),
 ):
     if period == "weekly":
@@ -99,14 +100,20 @@ def stock_prices(
         ["sh", ak.stock_zh_a_hist],
         ["sz", ak.stock_zh_a_hist],
         ["hk", ak.stock_hk_hist],
-        ["us", ak.stock_us_hist],
+        ["us", ak.stock_us_daily],
     ]
     for m in markets:
         if m[0] != market:
             continue
-        dfs = ak_cache(m[1], symbol=symbol, period=period, start_date=start_date, ttl=3600)
-        if dfs is None:
+        kws = {} if market == "us" else {"period": period, "start_date": start_date}
+        dfs = ak_cache(m[1], symbol=symbol, ttl=3600, **kws)
+        if dfs is None or dfs.empty:
             continue
+        if market == "us":
+            dfs.rename(columns={"date": "日期", "open": "开盘", "close": "收盘", "high": "最高", "low": "最低", "volume": "成交量"}, inplace=True)
+            dfs["换手率"] = None
+            dfs.index = pd.to_datetime(dfs["日期"], errors="coerce")
+            dfs = dfs[start_date:"22220101"]
         add_technical_indicators(dfs, dfs["收盘"], dfs["最低"], dfs["最高"])
         columns = [
             "日期", "开盘", "收盘", "最高", "最低", "成交量", "换手率",
@@ -271,7 +278,7 @@ def okx_taker_volume(
     description="获取币安对加密货币的AI分析报告，此工具对分析加密货币非常有用，推荐使用",
 )
 def binance_ai_report(
-    symbol: str = Field("BTC", description="币种，格式: BTC 或 ETH"),
+    symbol: str = Field("BTC", description="加密货币币种，格式: BTC 或 ETH"),
 ):
     res = requests.post(
         f"{BINANCE_BASE_URL}/bapi/bigdata/v3/friendly/bigdata/search/ai-report/report",
@@ -292,7 +299,9 @@ def binance_ai_report(
     )
     resp = res.json() or {}
     data = resp.get('data') or {}
-    modules = data.get('report', {}).get('translated', {}).get('modules', [])
+    report = data.get('report') or {}
+    translated = report.get('translated') or report.get('original') or {}
+    modules = translated.get('modules') or []
     txts = []
     for module in modules:
         if tit := module.get('overview'):
@@ -303,7 +312,7 @@ def binance_ai_report(
 
 
 
-def ak_cache(fun, *args, **kwargs):
+def ak_cache(fun, *args, **kwargs) -> pd.DataFrame | None:
     key = kwargs.pop("key", None)
     if not key:
         key = f"{fun.__name__}-{args}-{kwargs}"

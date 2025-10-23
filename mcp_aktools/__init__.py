@@ -36,7 +36,8 @@ def search(
         ["sz", ak.stock_info_sz_name_code, ["A股代码", "A股简称"]],
         ["hk", ak.stock_hk_spot, ["代码", "中文名称"]],
         ["hk", ak.stock_hk_spot_em, ["代码", "名称"]],
-        ["us", ak.stock_us_spot_em, ["代码", "名称"]],
+        ["us", ak.get_us_stock_name, ["symbol", "cname"]],
+        ["us", ak.get_us_stock_name, ["symbol", "name"]],
     ]
     for m in markets:
         if m[0] != market:
@@ -98,6 +99,7 @@ def stock_prices(
         ["sh", ak.stock_zh_a_hist],
         ["sz", ak.stock_zh_a_hist],
         ["hk", ak.stock_hk_hist],
+        ["us", ak.stock_us_hist],
     ]
     for m in markets:
         if m[0] != market:
@@ -117,20 +119,20 @@ def stock_prices(
 
 @mcp.tool(
     title="获取股票/加密货币相关新闻",
-    description="根据股票代码或关键词获取近期相关新闻",
+    description="根据股票代码或加密货币符号获取近期相关新闻",
 )
 def stock_news(
-    keyword: str = Field(description="关键词"),
+    symbol: str = Field(description="股票代码/加密货币符号"),
     limit: int = Field(15, description="返回数量(int)", strict=False),
 ):
     news = list(dict.fromkeys([
         v["新闻内容"]
-        for v in ak_cache(ak.stock_news_em, symbol=keyword, ttl=3600).to_dict(orient="records")
+        for v in ak_cache(ak.stock_news_em, symbol=symbol, ttl=3600).to_dict(orient="records")
         if isinstance(v, dict)
     ]))
     if news:
         return "\n".join(news[0:limit])
-    return f"Not Found for {keyword}"
+    return f"Not Found for {symbol}"
 
 
 @mcp.tool(
@@ -141,7 +143,7 @@ def stock_indicators_a(
     symbol: str = field_symbol,
 ):
     dfs = ak_cache(ak.stock_financial_abstract_ths, symbol=symbol)
-    keys = dfs.to_csv(index=False).strip().split("\n")
+    keys = dfs.to_csv(index=False, float_format="%.3f").strip().split("\n")
     return "\n".join([keys[0], *keys[-15:]])
 
 
@@ -153,6 +155,18 @@ def stock_indicators_hk(
     symbol: str = field_symbol,
 ):
     dfs = ak_cache(ak.stock_financial_hk_analysis_indicator_em, symbol=symbol, indicator="报告期")
+    keys = dfs.to_csv(index=False, float_format="%.3f").strip().split("\n")
+    return "\n".join(keys[0:15])
+
+
+@mcp.tool(
+    title="美股关键指标",
+    description="获取美股市场的股票财务报告关键指标",
+)
+def stock_indicators_us(
+    symbol: str = field_symbol,
+):
+    dfs = ak_cache(ak.stock_financial_us_analysis_indicator_em, symbol=symbol, indicator="单季报")
     keys = dfs.to_csv(index=False, float_format="%.3f").strip().split("\n")
     return "\n".join(keys[0:15])
 

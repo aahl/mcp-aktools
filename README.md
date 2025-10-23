@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/aahl-mcp-aktools-badge.png)](https://mseep.ai/app/aahl-mcp-aktools)
+
 # 📈 AkTools MCP Server
 
 基于 akshare 的 MCP (Model Context Protocol) 服务器，提供股票、加密货币的数据查询和分析功能。

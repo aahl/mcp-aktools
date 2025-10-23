@@ -87,12 +87,12 @@ def stock_prices(
     symbol: str = field_symbol,
     market: str = field_market,
     period: str = Field("daily", description="周期，如: daily(日线), weekly(周线)"),
-    price_count: int = Field(30),
+    limit: int = Field(30, description="返回数量(int)", strict=False),
 ):
     if period == "weekly":
-        delta = {"weeks": price_count + 62}
+        delta = {"weeks": limit + 62}
     else:
-        delta = {"days": price_count + 62}
+        delta = {"days": limit + 62}
     start_date = (datetime.now() - timedelta(**delta)).strftime("%Y%m%d")
     markets = [
         ["sh", ak.stock_zh_a_hist],
@@ -111,7 +111,7 @@ def stock_prices(
             "MACD", "DIF", "DEA", "KDJ.K", "KDJ.D", "KDJ.J", "RSI", "BOLL.U", "BOLL.M", "BOLL.L",
         ]
         all = dfs.to_csv(columns=columns, index=False, float_format="%.2f").strip().split("\n")
-        return "\n".join([all[0], *all[-price_count:]])
+        return "\n".join([all[0], *all[-limit:]])
     return f"Not Found for {symbol}.{market}"
 
 
@@ -121,7 +121,7 @@ def stock_prices(
 )
 def stock_news(
     keyword: str = Field(description="关键词"),
-    news_count: int = Field(15),
+    limit: int = Field(15, description="返回数量(int)", strict=False),
 ):
     news = list(dict.fromkeys([
         v["新闻内容"]
@@ -129,7 +129,7 @@ def stock_news(
         if isinstance(v, dict)
     ]))
     if news:
-        return "\n".join(news[0:news_count])
+        return "\n".join(news[0:limit])
     return f"Not Found for {keyword}"
 
 
@@ -164,7 +164,7 @@ def stock_indicators_hk(
 def okx_prices(
     instId: str = Field("BTC-USDT", description="产品ID，格式: BTC-USDT"),
     bar: str = Field("1h", description="K线时间粒度，仅支持: [1m/3m/5m/15m/30m/1H/2H/4H/6H/12H/1D/2D/3D/1W/1M/3M] 注意大小写，仅分钟为小写m"),
-    limit: int = Field(100, description="返回数量，最大300，最小建议30"),
+    limit: int = Field(100, description="返回数量(int)，最大300，最小建议30", strict=False),
 ):
     res = requests.get(
         f"{OKX_BASE_URL}/api/v5/market/candles",
@@ -254,7 +254,7 @@ def okx_taker_volume(
 
 @mcp.tool(
     title="获取加密货币分析报告",
-    description="获取币安对加密货币的AI分析报告",
+    description="获取币安对加密货币的AI分析报告，此工具对分析加密货币非常有用，推荐使用",
 )
 def binance_ai_report(
     symbol: str = Field("BTC", description="币种，格式: BTC 或 ETH"),

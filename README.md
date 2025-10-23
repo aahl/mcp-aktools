@@ -31,13 +31,14 @@
 }
 ```
 
-### 方式2: Smithery
-使用 [Smithery](https://smithery.ai/server/@aahl/mcp-aktools) 来安装，需要通过OAuth授权或Smithery key。
+### 方式2: [Smithery](https://smithery.ai/server/@aahl/mcp-aktools)
+> 需要通过OAuth授权或Smithery key
+
 ```yaml
 {
   "mcpServers": {
     "mcp-aktools": {
-      "url": "https://server.smithery.ai/@upstash/context7-mcp/mcp" # Streamable HTTP
+      "url": "https://server.smithery.ai/@aahl/mcp-aktools/mcp" # Streamable HTTP
     }
   }
 }

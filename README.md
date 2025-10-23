@@ -31,7 +31,20 @@
 }
 ```
 
-### 方式2: Docker
+### 方式2: [Smithery](https://smithery.ai/server/@aahl/mcp-aktools)
+> 需要通过OAuth授权或Smithery key
+
+```yaml
+{
+  "mcpServers": {
+    "mcp-aktools": {
+      "url": "https://server.smithery.ai/@aahl/mcp-aktools/mcp" # Streamable HTTP
+    }
+  }
+}
+```
+
+### 方式3: Docker
 ```bash
 mkdir /opt/mcp-aktools
 cd /opt/mcp-aktools

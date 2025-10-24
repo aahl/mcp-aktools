@@ -1,5 +1,3 @@
-[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/aahl-mcp-aktools-badge.png)](https://mseep.ai/app/aahl-mcp-aktools)
-
 # 📈 AkTools MCP Server
 
 基于 akshare 的 MCP (Model Context Protocol) 服务器，提供股票、加密货币的数据查询和分析功能。
@@ -71,3 +69,6 @@ docker-compose up -d
 - 添加到 Cherry Studio [![Install MCP Server](https://img.shields.io/badge/Cherry_Studio-+?label=Add+MCP+Server&color=FF5F5F)](https://gitee.com/link?target=cherrystudio%3A%2F%2Fmcp%2Finstall%3Fservers%3DeyJtY3BTZXJ2ZXJzIjp7ImFrdG9vbHMiOnsiY29tbWFuZCI6InV2eCIsImFyZ3MiOlsibWNwLWFrdG9vbHMiXX19fQ%3D%3D)
 - 添加到 Claude Code, 执行命令: `claude mcp add aktools -- uvx mcp-aktools`
 - 添加到 OpenAI CodeX, 执行命令: `codex mcp add aktools -- uvx mcp-aktools`
+
+
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/aahl-mcp-aktools-badge.png)](https://mseep.ai/app/aahl-mcp-aktools)

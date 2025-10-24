@@ -1,9 +1,9 @@
 # 📈 AkTools MCP Server
 
-[![Verified on MseeP](https://mseep.ai/badge.svg)](https://mseep.ai/app/1dd74d48-e77b-49f9-8d67-8c99603336e1)
+<!-- mcp-name: io.github.aahl/mcp-aktools -->
+<!-- [![Verified on MseeP](https://mseep.ai/badge.svg)](https://mseep.ai/app/1dd74d48-e77b-49f9-8d67-8c99603336e1) -->
 
 基于 akshare 的 MCP (Model Context Protocol) 服务器，提供股票、加密货币的数据查询和分析功能。
-<!-- mcp-name: io.github.aahl/mcp-aktools -->
 
 
 ## 功能
@@ -72,5 +72,10 @@ docker-compose up -d
 - 添加到 Claude Code, 执行命令: `claude mcp add aktools -- uvx mcp-aktools`
 - 添加到 OpenAI CodeX, 执行命令: `codex mcp add aktools -- uvx mcp-aktools`
 
+------
+
+<a href="https://glama.ai/mcp/servers/@al-one/mcp-aktools">
+  <img width="400" src="https://glama.ai/mcp/servers/@al-one/mcp-aktools/badge">
+</a>
 
 [![MseeP.ai Security Assessment Badge](https://mseep.net/pr/aahl-mcp-aktools-badge.png)](https://mseep.ai/app/aahl-mcp-aktools)

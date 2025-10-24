@@ -179,6 +179,106 @@ def stock_indicators_us(
 
 
 @mcp.tool(
+    title="获取当前时间及A股交易日信息",
+    description="获取当前系统时间及A股交易日信息，建议在调用其他需要日期参数的工具前使用该工具",
+)
+def get_current_time():
+    dfs = ak_cache(ak.tool_trade_date_hist_sina, ttl=43200)
+    now = datetime.now()
+    start = now.date() - timedelta(days=5)
+    ended = now.date() + timedelta(days=5)
+    dates = [
+        d.strftime("%Y-%m-%d")
+        for d in dfs["trade_date"]
+        if start <= d <= ended
+    ]
+    week = "日一二三四五六日"[datetime.now().isoweekday()]
+    return f"当前时间: {now.isoformat()}, 周{week}, 最近的交易日有: {','.join(dates)}"
+
+def recent_trade_date():
+    now = datetime.now().date()
+    dfs = ak_cache(ak.tool_trade_date_hist_sina, ttl=43200)
+    dfs.sort_values("trade_date", ascending=False, inplace=True)
+    for d in dfs["trade_date"]:
+        if d <= now:
+            return d
+    return now
+
+
+@mcp.tool(
+    title="A股涨停股池",
+    description="获取中国A股市场(上证、深证)的所有涨停股票",
+)
+def stock_zt_pool_em(
+    date: str = Field("", description="交易日日期(可选)，默认为最近的交易日，格式: 20251231"),
+    limit: int = Field(50, description="返回数量(int,30-100)", strict=False),
+):
+    if not date:
+        date = recent_trade_date().strftime("%Y%m%d")
+    dfs = ak_cache(ak.stock_zt_pool_em, date=date, ttl=1200)
+    cnt = len(dfs)
+    dfs.drop(columns=["序号", "流通市值", "总市值"], inplace=True)
+    dfs.sort_values("成交额", ascending=False, inplace=True)
+    dfs = dfs.head(int(limit))
+    desc = f"共{cnt}只涨停股\n"
+    return desc + dfs.to_csv(index=False, float_format="%.2f").strip()
+
+
+@mcp.tool(
+    title="A股强势股池",
+    description="获取中国A股市场(上证、深证)的强势股池数据",
+)
+def stock_zt_pool_strong_em(
+    date: str = Field("", description="交易日日期(可选)，默认为最近的交易日，格式: 20251231"),
+    limit: int = Field(50, description="返回数量(int,30-100)", strict=False),
+):
+    if not date:
+        date = recent_trade_date().strftime("%Y%m%d")
+    dfs = ak_cache(ak.stock_zt_pool_strong_em, date=date, ttl=1200)
+    dfs.drop(columns=["序号", "流通市值", "总市值"], inplace=True)
+    dfs.sort_values("成交额", ascending=False, inplace=True)
+    dfs = dfs.head(int(limit))
+    return dfs.to_csv(index=False, float_format="%.2f").strip()
+
+
+@mcp.tool(
+    title="A股龙虎榜统计",
+    description="获取中国A股市场(上证、深证)的龙虎榜个股上榜统计数据",
+)
+def stock_lhb_ggtj_sina(
+    days: str = Field("5", description="统计最近天数，仅支持: [5/10/30/60]"),
+    limit: int = Field(50, description="返回数量(int,30-100)", strict=False),
+):
+    dfs = ak_cache(ak.stock_lhb_ggtj_sina, symbol=days, ttl=3600)
+    dfs = dfs.head(int(limit))
+    return dfs.to_csv(index=False, float_format="%.2f").strip()
+
+
+@mcp.tool(
+    title="A股概念资金流向",
+    description="获取中国A股市场(上证、深证)的行业资金流向数据",
+)
+def stock_fund_flow_concept(
+    days: str = Field("0", description="天数，仅支持: [0/3/5/10/20]，0为实时"),
+):
+    symbol = f"{days}日排行" if int(days) else "即时"
+    dfs = ak_cache(ak.stock_fund_flow_concept, symbol=symbol, ttl=1200)
+    dfs.drop(columns=["序号"], inplace=True)
+    dfs.sort_values("净额", ascending=False, inplace=True)
+    dfs = pd.concat([dfs.head(15), dfs.tail(15)])
+    return dfs.to_csv(index=False, float_format="%.2f").strip()
+
+
+@mcp.tool(
+    title="全球财经快讯",
+    description="获取最新的全球财经快讯",
+)
+def stock_info_global_sina():
+    dfs = ak.stock_info_global_sina()
+    return dfs.to_csv(index=False, float_format="%.2f").strip()
+
+
+@mcp.tool(
     title="获取加密货币历史价格",
     description="获取OKX加密货币K线数据",
 )

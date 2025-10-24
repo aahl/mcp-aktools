@@ -217,7 +217,10 @@ def stock_zt_pool_em(
         date = recent_trade_date().strftime("%Y%m%d")
     dfs = ak_cache(ak.stock_zt_pool_em, date=date, ttl=1200)
     cnt = len(dfs)
-    dfs.drop(columns=["序号", "流通市值", "总市值"], inplace=True)
+    try:
+        dfs.drop(columns=["序号", "流通市值", "总市值"], inplace=True)
+    except Exception:
+        pass
     dfs.sort_values("成交额", ascending=False, inplace=True)
     dfs = dfs.head(int(limit))
     desc = f"共{cnt}只涨停股\n"
@@ -235,7 +238,10 @@ def stock_zt_pool_strong_em(
     if not date:
         date = recent_trade_date().strftime("%Y%m%d")
     dfs = ak_cache(ak.stock_zt_pool_strong_em, date=date, ttl=1200)
-    dfs.drop(columns=["序号", "流通市值", "总市值"], inplace=True)
+    try:
+        dfs.drop(columns=["序号", "流通市值", "总市值"], inplace=True)
+    except Exception:
+        pass
     dfs.sort_values("成交额", ascending=False, inplace=True)
     dfs = dfs.head(int(limit))
     return dfs.to_csv(index=False, float_format="%.2f").strip()
@@ -263,7 +269,10 @@ def stock_fund_flow_concept(
 ):
     symbol = f"{days}日排行" if int(days) else "即时"
     dfs = ak_cache(ak.stock_fund_flow_concept, symbol=symbol, ttl=1200)
-    dfs.drop(columns=["序号"], inplace=True)
+    try:
+        dfs.drop(columns=["序号"], inplace=True)
+    except Exception:
+        pass
     dfs.sort_values("净额", ascending=False, inplace=True)
     dfs = pd.concat([dfs.head(15), dfs.tail(15)])
     return dfs.to_csv(index=False, float_format="%.2f").strip()

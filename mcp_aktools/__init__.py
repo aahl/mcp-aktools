@@ -183,17 +183,20 @@ def stock_indicators_us(
     description="获取当前系统时间及A股交易日信息，建议在调用其他需要日期参数的工具前使用该工具",
 )
 def get_current_time():
-    dfs = ak_cache(ak.tool_trade_date_hist_sina, ttl=43200)
     now = datetime.now()
-    start = now.date() - timedelta(days=5)
-    ended = now.date() + timedelta(days=5)
-    dates = [
-        d.strftime("%Y-%m-%d")
-        for d in dfs["trade_date"]
-        if start <= d <= ended
-    ]
-    week = "日一二三四五六日"[datetime.now().isoweekday()]
-    return f"当前时间: {now.isoformat()}, 周{week}, 最近的交易日有: {','.join(dates)}"
+    week = "日一二三四五六日"[now.isoweekday()]
+    texts = [f"当前时间: {now.isoformat()}, 星期{week}"]
+    dfs = ak_cache(ak.tool_trade_date_hist_sina, ttl=43200)
+    if dfs is not None:
+        start = now.date() - timedelta(days=5)
+        ended = now.date() + timedelta(days=5)
+        dates = [
+            d.strftime("%Y-%m-%d")
+            for d in dfs["trade_date"]
+            if start <= d <= ended
+        ]
+        texts.append(f", 最近交易日有: {','.join(dates)}")
+    return "".join(texts)
 
 def recent_trade_date():
     now = datetime.now().date()

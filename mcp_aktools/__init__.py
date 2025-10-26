@@ -201,6 +201,8 @@ def get_current_time():
 def recent_trade_date():
     now = datetime.now().date()
     dfs = ak_cache(ak.tool_trade_date_hist_sina, ttl=43200)
+    if dfs is None:
+        return now
     dfs.sort_values("trade_date", ascending=False, inplace=True)
     for d in dfs["trade_date"]:
         if d <= now:

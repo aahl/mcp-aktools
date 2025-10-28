@@ -1,6 +1,7 @@
 # 📈 AkTools MCP Server
 
 <!-- mcp-name: io.github.aahl/mcp-aktools -->
+<!-- [![MCP Badge](https://lobehub.com/badge/mcp/aahl-mcp-aktools)](https://lobehub.com/mcp/aahl-mcp-aktools) -->
 <!-- [![Verified on MseeP](https://mseep.ai/badge.svg)](https://mseep.ai/app/1dd74d48-e77b-49f9-8d67-8c99603336e1) -->
 
 基于 akshare 的 MCP (Model Context Protocol) 服务器，提供股票、加密货币的数据查询和分析功能。

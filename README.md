@@ -76,6 +76,53 @@ docker-compose up -d
 
 ------
 
+## 🛠️ 可用工具
+
+<details>
+<summary><strong>个股相关</strong></summary>
+
+- `search` - 查找股票代码，支持A股、港股、美股
+- `stock_info` - 获取股票信息
+- `stock_prices` - 获取股票历史价格
+- `stock_indicators_a` - A股关键指标
+- `stock_indicators_hk` - 港股关键指标
+- `stock_indicators_us` - 美股关键指标
+
+</details>
+
+<details>
+<summary><strong>A股市场</strong></summary>
+
+- `get_current_time` - 获取当前时间及A股交易日信息
+- `stock_zt_pool_em` - A股涨停股池
+- `stock_zt_pool_strong_em` - A股强势股池
+- `stock_lhb_ggtj_sina` - A股龙虎榜统计
+- `stock_fund_flow_concept` - A股概念资金流向
+- `wework_app_send_news` - 发送图文链接消息
+
+</details>
+
+<details>
+<summary><strong>财经资讯</strong></summary>
+
+- `stock_news` - 获取个股/加密货币相关新闻
+- `stock_info_global_sina` - 全球财经快讯
+
+</details>
+
+<details>
+<summary><strong>加密货币</strong></summary>
+
+- `okx_prices` - 获取加密货币历史价格
+- `okx_loan_ratios` - 获取加密货币杠杆多空比
+- `okx_taker_volume` - 获取加密货币主动买卖情况
+- `binance_ai_report` - 获取加密货币AI分析报告
+
+</details>
+
+
+------
+
 <a href="https://glama.ai/mcp/servers/@al-one/mcp-aktools">
   <img width="400" src="https://glama.ai/mcp/servers/@al-one/mcp-aktools/badge">
 </a>

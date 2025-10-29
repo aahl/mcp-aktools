@@ -98,7 +98,6 @@ docker-compose up -d
 - `stock_zt_pool_strong_em` - A股强势股池
 - `stock_lhb_ggtj_sina` - A股龙虎榜统计
 - `stock_fund_flow_concept` - A股概念资金流向
-- `wework_app_send_news` - 发送图文链接消息
 
 </details>
 

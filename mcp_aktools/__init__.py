@@ -1,5 +1,6 @@
 import os
 import time
+import json
 import logging
 import akshare as ak
 import argparse
@@ -411,7 +412,13 @@ def binance_ai_report(
         },
         timeout=20,
     )
-    resp = res.json() or {}
+    try:
+        resp = res.json() or {}
+    except Exception:
+        try:
+            resp = json.loads(res.text.strip()) or {}
+        except Exception:
+            return res.text
     data = resp.get('data') or {}
     report = data.get('report') or {}
     translated = report.get('translated') or report.get('original') or {}

@@ -21,6 +21,7 @@ field_market = Field("sh", description="股票市场，如: sh(上证), sz(深�
 
 OKX_BASE_URL = os.getenv("OKX_BASE_URL") or "https://www.okx.com"
 BINANCE_BASE_URL = os.getenv("BINANCE_BASE_URL") or "https://www.binance.com"
+USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10) AppleWebKit/537.36 Chrome/139"
 
 
 @mcp.tool(
@@ -288,9 +289,49 @@ def stock_fund_flow_concept(
     title="全球财经快讯",
     description="获取最新的全球财经快讯",
 )
-def stock_info_global_sina():
-    dfs = ak.stock_info_global_sina()
-    return dfs.to_csv(index=False, float_format="%.2f").strip()
+def stock_news_global():
+    news = []
+    try:
+        dfs = ak.stock_info_global_sina()
+        csv = dfs.to_csv(index=False, float_format="%.2f").strip()
+        csv = csv.replace(datetime.now().strftime("%Y-%m-%d "), "")
+        news.extend(csv.split("\n"))
+    except Exception:
+        pass
+    news.extend(newsnow_news())
+    return "\n".join(news)
+
+
+def newsnow_news(channels=None):
+    base = os.getenv("NEWSNOW_BASE_URL")
+    if not base:
+        return []
+    if not channels:
+        channels = os.getenv("NEWSNOW_CHANNELS") or "wallstreetcn-quick,cls-telegraph,jin10"
+    if isinstance(channels, str):
+        channels = channels.split(",")
+    all = []
+    try:
+        res = requests.post(
+            f"{base}/api/s/entire",
+            json={"sources": channels},
+            headers={
+                "User-Agent": USER_AGENT,
+                "Referer": base,
+            },
+            timeout=60,
+        )
+        lst = res.json() or []
+        for item in lst:
+            for v in item.get("items", [])[0:15]:
+                title = v.get("title", "")
+                extra = v.get("extra") or {}
+                hover = extra.get("hover") or title
+                info = extra.get("info") or ""
+                all.append(f"{hover} {info}".strip().replace("\n", " "))
+    except Exception:
+        pass
+    return all
 
 
 @mcp.tool(
@@ -406,7 +447,7 @@ def binance_ai_report(
             'translateToken': None,
         },
         headers={
-            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10) AppleWebKit/537.36 Chrome/139',
+            'User-Agent': USER_AGENT,
             'Referer': f'https://www.binance.com/zh-CN/trade/{symbol}_USDT?type=spot',
             'lang': 'zh-CN',
         },

@@ -105,7 +105,7 @@ docker-compose up -d
 <summary><strong>财经资讯</strong></summary>
 
 - `stock_news` - 获取个股/加密货币相关新闻
-- `stock_info_global_sina` - 全球财经快讯
+- `stock_news_global` - 全球财经快讯
 
 </details>
 

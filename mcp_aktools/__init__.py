@@ -14,7 +14,7 @@ from .cache import CacheKey
 
 _LOGGER = logging.getLogger(__name__)
 
-mcp = FastMCP(name="mcp-aktools", version="0.1.7")
+mcp = FastMCP(name="mcp-aktools", version="0.1.8")
 
 field_symbol = Field(description="股票代码")
 field_market = Field("sh", description="股票市场，如: sh(上证), sz(深证), hk(港股), us(美股) 等")

@@ -9,12 +9,12 @@
 
 ## 功能
 
-- **股票搜索**: 根据股票名称、公司简称等关键词查找股票代码
-- **股票信息**: 获取股票的详细信息，包括价格、市值等
-- **市场概况**: 获取A股市场的涨停板、龙虎榜、资金流向等
-- **历史价格**: 获取股票、加密货币历史价格数据，包含技术分析指标
-- **相关新闻**: 获取股票、加密货币相关的最新新闻资讯
-- **财务指标**: 支持A股和港美股的财务报告关键指标查询
+- 🔍 **股票搜索**: 根据股票名称、公司简称等关键词查找股票代码
+- ℹ️ **股票信息**: 获取股票的详细信息，包括价格、市值等
+- 📊 **市场概况**: 获取A股市场的涨停板、龙虎榜、资金流向等
+- 💹 **历史价格**: 获取股票、加密货币历史价格数据，包含技术分析指标
+- 📰 **相关新闻**: 获取股票、加密货币相关的最新新闻资讯
+- 💸 **财务指标**: 支持A股和港美股的财务报告关键指标查询
 
 
 ## 安装
@@ -27,8 +27,11 @@
       "command": "uvx",
       "args": ["mcp-aktools"],
       "env": {
+        # 全部可选
         "OKX_BASE_URL": "https://okx.4url.cn", # OKX地址，如果你的网络环境无法访问okx.com，可通过此选项配置反代地址
-        "BINANCE_BASE_URL": "https://bian.4url.cn" # 币安地址，默认: https://www.binance.com
+        "BINANCE_BASE_URL": "https://bian.4url.cn", # 币安地址，默认: https://www.binance.com
+        "NEWSNOW_BASE_URL": "https://newsnow.busiyi.world", # Newsnow接口地址
+        "NEWSNOW_CHANNELS": "wallstreetcn-quick,cls-telegraph,jin10", # Newsnow资讯来源
       }
     }
   }

@@ -485,7 +485,7 @@ def main():
 
     args = parser.parse_args()
     if args.http or mode == "http":
-        app = mcp.streamable_http_app()
+        app = mcp.http_app()
         app.add_middleware(
             CORSMiddleware,
             allow_origins=["*"],

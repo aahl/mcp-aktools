@@ -268,21 +268,21 @@ def stock_lhb_ggtj_sina(
 
 
 @mcp.tool(
-    title="A股概念资金流向",
+    title="A股板块资金流",
     description="获取中国A股市场(上证、深证)的行业资金流向数据",
 )
-def stock_fund_flow_concept(
-    days: str = Field("0", description="天数，仅支持: [0/3/5/10/20]，0为实时"),
+def stock_sector_fund_flow_rank(
+    days: str = Field("今日", description="天数，仅支持: {'今日','5日','10日'}"),
+    cate: str = Field("行业资金流", description="仅支持: {'行业资金流','概念资金流','地域资金流'}"),
 ):
-    symbol = f"{days}日排行" if int(days) else "即时"
-    dfs = ak_cache(ak.stock_fund_flow_concept, symbol=symbol, ttl=1200)
+    dfs = ak_cache(ak.stock_sector_fund_flow_rank, indicator=days, sector_type=cate, ttl=1200)
     try:
         dfs.drop(columns=["序号"], inplace=True)
-    except Exception:
-        pass
-    dfs.sort_values("净额", ascending=False, inplace=True)
-    dfs = pd.concat([dfs.head(15), dfs.tail(15)])
-    return dfs.to_csv(index=False, float_format="%.2f").strip()
+        dfs.sort_values("今日涨跌幅", ascending=False, inplace=True)
+        dfs = pd.concat([dfs.head(20), dfs.tail(20)])
+        return dfs.to_csv(index=False, float_format="%.2f").strip()
+    except Exception as exc:
+        return str(exc)
 
 
 @mcp.tool(

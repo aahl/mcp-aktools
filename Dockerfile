@@ -1,4 +1,4 @@
-FROM ghcr.io/astral-sh/uv:python3.13-alpine
+FROM ghcr.io/astral-sh/uv:python3.13-bookworm-slim
 
 LABEL io.modelcontextprotocol.server.name="io.github.aahl/mcp-aktools"
 
@@ -12,6 +12,7 @@ ENV PYTHONUNBUFFERED=1 \
 WORKDIR /app
 COPY . .
 
+RUN apt update && apt install -y --no-install-recommends netcat-openbsd
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --locked --no-dev
 

@@ -277,8 +277,11 @@ def stock_sector_fund_flow_rank(
 ):
     dfs = ak_cache(ak.stock_sector_fund_flow_rank, indicator=days, sector_type=cate, ttl=1200)
     try:
-        dfs.drop(columns=["序号"], inplace=True)
         dfs.sort_values("今日涨跌幅", ascending=False, inplace=True)
+        dfs.drop(columns=["序号"], inplace=True)
+    except Exception:
+        pass
+    try:
         dfs = pd.concat([dfs.head(20), dfs.tail(20)])
         return dfs.to_csv(index=False, float_format="%.2f").strip()
     except Exception as exc:

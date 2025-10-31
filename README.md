@@ -90,6 +90,7 @@ docker-compose up -d
 - `stock_indicators_a` - A股关键指标
 - `stock_indicators_hk` - 港股关键指标
 - `stock_indicators_us` - 美股关键指标
+- `trading_suggest` - 给出投资建议
 
 </details>
 

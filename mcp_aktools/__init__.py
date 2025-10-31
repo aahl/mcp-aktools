@@ -14,7 +14,7 @@ from .cache import CacheKey
 
 _LOGGER = logging.getLogger(__name__)
 
-mcp = FastMCP(name="mcp-aktools", version="0.1.8")
+mcp = FastMCP(name="mcp-aktools", version="0.1.9")
 
 field_symbol = Field(description="股票代码")
 field_market = Field("sh", description="股票市场，如: sh(上证), sz(深证), hk(港股), us(美股) 等")
@@ -26,7 +26,7 @@ USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10) AppleWebKit/537.36 Chro
 
 @mcp.tool(
     title="查找股票代码",
-    description="根据股票名称、公司名称等关键词查找股票代码。"
+    description="根据股票名称、公司名称等关键词查找股票代码，不支持加密货币。"
                 "该工具比较耗时，当你知道股票代码或用户已指定股票代码时，建议直接通过股票代码使用其他工具",
 )
 def search(
@@ -63,7 +63,7 @@ def search(
 
 @mcp.tool(
     title="获取股票信息",
-    description="根据股票代码和市场获取股票基本信息",
+    description="根据股票代码和市场获取股票基本信息，不支持加密货币",
 )
 def stock_info(
     symbol: str = field_symbol,
@@ -85,7 +85,7 @@ def stock_info(
 
 @mcp.tool(
     title="获取股票历史价格",
-    description="根据股票代码和市场获取股票历史价格及技术指标",
+    description="根据股票代码和市场获取股票历史价格及技术指标，不支持加密货币",
 )
 def stock_prices(
     symbol: str = field_symbol,
@@ -336,7 +336,7 @@ def newsnow_news(channels=None):
 
 @mcp.tool(
     title="获取加密货币历史价格",
-    description="获取OKX加密货币K线数据",
+    description="获取OKX加密货币的历史K线数据，包括价格、交易量和技术指标",
 )
 def okx_prices(
     instId: str = Field("BTC-USDT", description="产品ID，格式: BTC-USDT"),
@@ -472,6 +472,23 @@ def binance_ai_report(
             txts.append(point.get('content', ''))
     return '\n'.join(txts)
 
+
+@mcp.tool(
+    title="给出投资建议",
+    description="基于AI对其他工具提供的数据分析结果给出具体投资建议",
+)
+def trading_suggest(
+    symbol: str = Field(description="股票代码或加密币种"),
+    action: str = Field(description="推荐操作: buy/sell/hold"),
+    score: int = Field(description="置信度，范围: 0-100"),
+    reason: str = Field(description="推荐理由"),
+):
+    return {
+        "symbol": symbol,
+        "action": action,
+        "score": score,
+        "reason": reason,
+    }
 
 
 def ak_cache(fun, *args, **kwargs) -> pd.DataFrame | None:

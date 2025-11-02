@@ -1181,7 +1181,7 @@ wheels = [
 
 [[package]]
 name = "mcp-aktools"
-version = "0.1.10"
+version = "0.1.11"
 source = { editable = "." }
 dependencies = [
     { name = "akshare" },

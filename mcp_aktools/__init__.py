@@ -13,8 +13,9 @@ from starlette.middleware.cors import CORSMiddleware
 from .cache import CacheKey
 
 _LOGGER = logging.getLogger(__name__)
+_LOGGER.setLevel(logging.INFO)
 
-mcp = FastMCP(name="mcp-aktools", version="0.1.10")
+mcp = FastMCP(name="mcp-aktools", version="0.1.11")
 
 field_symbol = Field(description="股票代码")
 field_market = Field("sh", description="股票市场，仅支持: sh(上证), sz(深证), hk(港股), us(美股), 不支持加密货币")
@@ -33,31 +34,10 @@ def search(
     keyword: str = Field(description="搜索关键词，公司名称、股票名称、股票代码、证券简称"),
     market: str = field_market,
 ):
-    markets = [
-        ["sh", ak.stock_info_a_code_name, ["code", "name"]],
-        ["sh", ak.stock_info_sh_name_code, ["证券代码", "证券简称"]],
-        ["sz", ak.stock_info_sz_name_code, ["A股代码", "A股简称"]],
-        ["hk", ak.stock_hk_spot, ["代码", "中文名称"]],
-        ["hk", ak.stock_hk_spot_em, ["代码", "名称"]],
-        ["us", ak.get_us_stock_name, ["symbol", "cname"]],
-        ["us", ak.get_us_stock_name, ["symbol", "name"]],
-    ]
-    for m in markets:
-        if m[0] != market:
-            continue
-        all = ak_cache(m[1], ttl=86400*7)
-        if all is not None:
-            suffix = f"证券市场: {market}"
-            for _, v in all.iterrows():
-                kws = [v[k] for k in m[2]]
-                if keyword not in kws:
-                    continue
-                return "\n".join([v.to_string(), suffix])
-            for _, v in all.iterrows():
-                name = str(v[m[2][1]])
-                if not name.startswith(keyword):
-                    continue
-                return "\n".join([v.to_string(), suffix])
+    info = ak_search(None, keyword, market)
+    if info is not None:
+        suffix = f"交易市场: {market}"
+        return "\n".join([info.to_string(), suffix])
     return f"Not Found for {keyword}"
 
 
@@ -78,8 +58,13 @@ def stock_info(
         if m[0] != market:
             continue
         all = ak_cache(m[1], symbol=symbol, ttl=43200)
-        if all is not None:
-            return all.to_string()
+        if all is None or all.empty:
+            continue
+        return all.to_string()
+
+    info = ak_search(symbol, market)
+    if info is not None:
+        return info.to_string()
     return f"Not Found for {symbol}.{market}"
 
 
@@ -99,23 +84,20 @@ def stock_prices(
         delta = {"days": limit + 62}
     start_date = (datetime.now() - timedelta(**delta)).strftime("%Y%m%d")
     markets = [
-        ["sh", ak.stock_zh_a_hist],
-        ["sz", ak.stock_zh_a_hist],
-        ["hk", ak.stock_hk_hist],
-        ["us", ak.stock_us_daily],
+        ["sh", ak.stock_zh_a_hist, {}],
+        ["sz", ak.stock_zh_a_hist, {}],
+        ["hk", ak.stock_hk_hist, {}],
+        ["us", stock_us_daily, {}],
+        ["sh", fund_etf_hist_sina, {"market": "sh"}],
+        ["sz", fund_etf_hist_sina, {"market": "sz"}],
     ]
     for m in markets:
         if m[0] != market:
             continue
-        kws = {} if market == "us" else {"period": period, "start_date": start_date}
+        kws = {"period": period, "start_date": start_date, **m[2]}
         dfs = ak_cache(m[1], symbol=symbol, ttl=3600, **kws)
         if dfs is None or dfs.empty:
             continue
-        if market == "us":
-            dfs.rename(columns={"date": "日期", "open": "开盘", "close": "收盘", "high": "最高", "low": "最低", "volume": "成交量"}, inplace=True)
-            dfs["换手率"] = None
-            dfs.index = pd.to_datetime(dfs["日期"], errors="coerce")
-            dfs = dfs[start_date:"22220101"]
         add_technical_indicators(dfs, dfs["收盘"], dfs["最低"], dfs["最高"])
         columns = [
             "日期", "开盘", "收盘", "最高", "最低", "成交量", "换手率",
@@ -124,6 +106,25 @@ def stock_prices(
         all = dfs.to_csv(columns=columns, index=False, float_format="%.2f").strip().split("\n")
         return "\n".join([all[0], *all[-limit:]])
     return f"Not Found for {symbol}.{market}"
+
+
+def stock_us_daily(symbol, start_date="2025-01-01", period="daily"):
+    dfs = ak.stock_us_daily(symbol=symbol)
+    if dfs is None or dfs.empty:
+        return None
+    dfs.rename(columns={"date": "日期", "open": "开盘", "close": "收盘", "high": "最高", "low": "最低", "volume": "成交量"}, inplace=True)
+    dfs["换手率"] = None
+    dfs.index = pd.to_datetime(dfs["日期"], errors="coerce")
+    return dfs[start_date:"2222-01-01"]
+
+def fund_etf_hist_sina(symbol, market="sh", start_date="2025-01-01", period="daily"):
+    dfs = ak.fund_etf_hist_sina(symbol=f"{market}{symbol}")
+    if dfs is None or dfs.empty:
+        return None
+    dfs.rename(columns={"date": "日期", "open": "开盘", "close": "收盘", "high": "最高", "low": "最低", "volume": "成交量"}, inplace=True)
+    dfs["换手率"] = None
+    dfs.index = pd.to_datetime(dfs["日期"], errors="coerce")
+    return dfs[start_date:"2222-01-01"]
 
 
 @mcp.tool(
@@ -272,10 +273,12 @@ def stock_lhb_ggtj_sina(
     description="获取中国A股市场(上证、深证)的行业资金流向数据",
 )
 def stock_sector_fund_flow_rank(
-    days: str = Field("今日", description="天数，仅支持: {'今日','5日','10日'}"),
+    days: str = Field("今日", description="天数，仅支持: {'今日','5日','10日'}，如果需要获取今日数据，请确保是交易日"),
     cate: str = Field("行业资金流", description="仅支持: {'行业资金流','概念资金流','地域资金流'}"),
 ):
     dfs = ak_cache(ak.stock_sector_fund_flow_rank, indicator=days, sector_type=cate, ttl=1200)
+    if dfs is None:
+        return "获取数据失败"
     try:
         dfs.sort_values("今日涨跌幅", ascending=False, inplace=True)
         dfs.drop(columns=["序号"], inplace=True)
@@ -494,6 +497,43 @@ def trading_suggest(
     }
 
 
+def ak_search(symbol=None, keyword=None, market=None):
+    markets = [
+        ["sh", ak.stock_info_a_code_name, "code", "name"],
+        ["sh", ak.stock_info_sh_name_code, "证券代码", "证券简称"],
+        ["sz", ak.stock_info_sz_name_code, "A股代码", "A股简称"],
+        ["hk", ak.stock_hk_spot, "代码", "中文名称"],
+        ["hk", ak.stock_hk_spot_em, "代码", "名称"],
+        ["us", ak.get_us_stock_name, "symbol", "cname"],
+        ["us", ak.get_us_stock_name, "symbol", "name"],
+        ["sh", ak.fund_etf_spot_ths, "基金代码", "基金名称"],
+        ["sz", ak.fund_etf_spot_ths, "基金代码", "基金名称"],
+        ["sh", ak.fund_info_index_em, "基金代码", "基金名称"],
+        ["sz", ak.fund_info_index_em, "基金代码", "基金名称"],
+        ["sh", ak.fund_etf_spot_em, "代码", "名称"],
+        ["sz", ak.fund_etf_spot_em, "代码", "名称"],
+    ]
+    for m in markets:
+        if market and market != m[0]:
+            continue
+        all = ak_cache(m[1], ttl=86400, ttl2=86400*7)
+        if all is None or all.empty:
+            continue
+        for _, v in all.iterrows():
+            code, name = str(v[m[2]]).upper(), str(v[m[3]]).upper()
+            if symbol and symbol.upper() == code:
+                return v
+            if keyword and keyword.upper() in [code, name]:
+                return v
+        for _, v in all.iterrows() if keyword else []:
+            name = str(v[m[3]])
+            if len(keyword) >= 4 and keyword in name:
+                return v
+            if name.startswith(keyword):
+                return v
+    return None
+
+
 def ak_cache(fun, *args, **kwargs) -> pd.DataFrame | None:
     key = kwargs.pop("key", None)
     if not key:
@@ -504,7 +544,7 @@ def ak_cache(fun, *args, **kwargs) -> pd.DataFrame | None:
     all = cache.get()
     if all is None:
         try:
-            _LOGGER.info("Request akshare: %s", key)
+            _LOGGER.info("Request akshare: %s", [key, args, kwargs])
             all = fun(*args, **kwargs)
             cache.set(all)
         except Exception as exc:

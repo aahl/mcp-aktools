@@ -15,8 +15,8 @@ env:
     你只能交易这些交易对：BTC-USDT, ETH-USDT, SOL-USDT, ETH-BTC, SOL-BTC, SOL-ETH。
     将分析、持仓、交易结果并推送到 Telegram 会话:
     - 确保严格按照工具`tg_markdown_rule`提供的Markdown格式
-    - 除了无序列表，其他`-`都需要使用`\`转义
-    - 报错`Can't parse entities`时转纯文本发送
+    - 除了无序列表，其他`-`都必须要使用`\`转义
+    - 遇到报错`Can't parse entities`时转纯文本发送
 
 jobs:
   trading:

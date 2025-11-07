@@ -33,6 +33,6 @@ jobs:
           claude_code_oauth_token: ${{ secrets.ANTHROPIC_AUTH_TOKEN }}
           claude_args: |
             --mcp-config /tmp/mcp-config.json
-            --allowedTools mcp__aktools mcp__okx
+            --allowedTools "WebSearch,WebFetch,mcp__aktools"
             --model ${{ vars.ANTHROPIC_DEFAULT_OPUS_MODEL }}
           prompt: ${{ inputs.prompt }}

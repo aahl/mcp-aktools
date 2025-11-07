@@ -1,0 +1,33 @@
+name: Trading with Claude code
+
+on:
+  workflow_dispatch:
+
+jobs:
+  trading:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create MCP Config
+        run: |
+          cat > /tmp/mcp-config.json << 'EOF'
+          {
+            "mcpServers": {
+              "aktools": {
+                "command": "uvx",
+                "args": ["mcp-aktools"]
+              }
+            }
+          }
+          EOF
+
+      - uses: anthropics/claude-code-action@v1
+        env:
+          ANTHROPIC_BASE_URL: ${{ vars.ANTHROPIC_BASE_URL }}
+        with:
+          claude_code_oauth_token: ${{ secrets.ANTHROPIC_AUTH_TOKEN }}
+          claude_args: |
+            --mcp-config /tmp/mcp-config.json
+            --allowedTools mcp__aktools mcp__okx
+            --model ${{ vars.ANTHROPIC_DEFAULT_OPUS_MODEL }}
+          prompt: |
+            What MCP tools do you provide ?

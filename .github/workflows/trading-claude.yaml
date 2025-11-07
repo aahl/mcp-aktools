@@ -2,12 +2,14 @@ name: Trading with Claude code
 
 on:
   workflow_dispatch:
+    inputs:
+      prompt:
+        description: Prompt for Claude code
+        default: What MCP tools do you provide ?
 
 jobs:
   trading:
     runs-on: ubuntu-latest
-    permissions:
-      id-token: write
     steps:
       - name: Create MCP Config
         run: |
@@ -31,5 +33,4 @@ jobs:
             --mcp-config /tmp/mcp-config.json
             --allowedTools mcp__aktools mcp__okx
             --model ${{ vars.ANTHROPIC_DEFAULT_OPUS_MODEL }}
-          prompt: |
-            What MCP tools do you provide ?
+          prompt: ${{ inputs.prompt }}

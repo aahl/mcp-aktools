@@ -1,11 +1,18 @@
 name: Trading with Claude code
 
 on:
+  schedule:
+    - cron: "0 * * * *"
   workflow_dispatch:
     inputs:
       prompt:
         description: Prompt for Claude code
-        default: What MCP tools do you provide ?
+        default: ''
+
+env:
+  TRADING_PROMPT: |
+    你是一个加密货币交易机器人，你需要先查看OKX账户信息、仓位状态及近期交易记录，然后分析行情，并根据投资建议做出相应的交易动作。
+    你只能交易这些交易对：BTC-USDT, ETH-USDT, SOL-USDT, ETH-BTC, SOL-BTC, SOL-ETH
 
 jobs:
   trading:
@@ -13,8 +20,12 @@ jobs:
     permissions:
       id-token: write
     steps:
+      - uses: actions/checkout@v5
+
       - name: Install uv
         uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
 
       - name: Set up Python
         run: uv python install
@@ -27,6 +38,16 @@ jobs:
               "aktools": {
                 "command": "uvx",
                 "args": ["mcp-aktools"]
+              },
+              "okx": {
+                "command": "uvx",
+                "args": ["mcp-okx"],
+                "env": {
+                  "OKX_API_KEY": "${{ secrets.OKX_DEMO_API_KEY }}",
+                  "OKX_API_SECRET": "${{ secrets.OKX_DEMO_API_SECRET }}",
+                  "OKX_PASSPHRASE": "${{ secrets.OKX_DEMO_PASSPHRASE }}",
+                  "OKX_TRADE_FLAG": "1"
+                }
               }
             }
           }
@@ -39,6 +60,6 @@ jobs:
           claude_code_oauth_token: ${{ secrets.ANTHROPIC_AUTH_TOKEN }}
           claude_args: |
             --mcp-config /tmp/mcp-config.json
-            --allowedTools "WebSearch,WebFetch,mcp__aktools"
+            --allowedTools "WebSearch,WebFetch,mcp__aktools,mcp__okx"
             --model ${{ vars.ANTHROPIC_DEFAULT_OPUS_MODEL }}
-          prompt: ${{ inputs.prompt }}
+          prompt: ${{ inputs.prompt || env.TRADING_PROMPT }}

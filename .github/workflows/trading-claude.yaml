@@ -13,7 +13,10 @@ env:
   TRADING_PROMPT: |
     你是一个加密货币交易机器人，你需要先查看OKX账户信息、仓位状态及近期交易记录，然后分析行情，并根据投资建议做出相应的交易动作。
     你只能交易这些交易对：BTC-USDT, ETH-USDT, SOL-USDT, ETH-BTC, SOL-BTC, SOL-ETH。
-    将分析、持仓、交易结果并推送到 Telegram 会话，确保严格按照工具`tg_markdown_rule`提供的Markdown格式，报错时转纯文本发送。
+    将分析、持仓、交易结果并推送到 Telegram 会话:
+    - 确保严格按照工具`tg_markdown_rule`提供的Markdown格式
+    - 除了无序列表，其他`-`都需要使用`\`转义
+    - 报错`Can't parse entities`时转纯文本发送
 
 jobs:
   trading:
@@ -66,9 +69,29 @@ jobs:
         env:
           ANTHROPIC_BASE_URL: ${{ vars.ANTHROPIC_BASE_URL }}
         with:
+          prompt: ${{ inputs.prompt || env.TRADING_PROMPT }}
           claude_code_oauth_token: ${{ secrets.ANTHROPIC_AUTH_TOKEN }}
           claude_args: |
             --mcp-config /tmp/mcp-config.json
             --allowedTools "WebSearch,WebFetch,mcp__aktools,mcp__okx,mcp__notify"
-            --model ${{ vars.ANTHROPIC_DEFAULT_OPUS_MODEL }}
-          prompt: ${{ inputs.prompt || env.TRADING_PROMPT }}
+          settings: |
+            {
+              "env": {
+                "ANTHROPIC_DEFAULT_OPUS_MODEL": "${{ vars.ANTHROPIC_DEFAULT_OPUS_MODEL }}",
+                "ANTHROPIC_DEFAULT_HAIKU_MODEL": "${{ vars.ANTHROPIC_DEFAULT_HAIKU_MODEL }}",
+                "ANTHROPIC_DEFAULT_SONNET_MODEL": "${{ vars.ANTHROPIC_DEFAULT_SONNET_MODEL }}"
+              },
+              "hooks": {
+                "PostToolUse": [
+                  {
+                    "matcher": "*",
+                    "hooks": [
+                      {
+                        "type": "command",
+                        "command": "jq -r '\"\\(.tool_input.command) - \\(.tool_input.description // \"No description\")\"'"
+                      }
+                    ]
+                  }
+                ]
+              }
+            }

@@ -14,6 +14,7 @@ env:
     你是一个加密货币交易机器人，你需要先查看OKX账户信息、仓位状态及近期交易记录，然后分析行情，并根据投资建议做出相应的交易动作。
     你只能交易这些交易对：BTC-USDT, ETH-USDT, SOL-USDT, ETH-BTC, SOL-BTC, SOL-ETH。
     将分析、持仓、交易结果并推送到 Telegram 会话:
+    - 以AI模拟盘自动交易报告为标题
     - 确保严格遵循工具`tg_markdown_rule`提供的Markdown格式
     - 遇到报错`Can't parse entities`时转纯文本发送
     使用工具`save_trading_result`保存结果。
@@ -26,11 +27,14 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
 
       - name: Install uv
         uses: astral-sh/setup-uv@v6
         with:
-          enable-cache: true
+          enable-cache: false
 
       - name: Set up Python
         run: uv python install
@@ -74,6 +78,7 @@ jobs:
           EOF
 
       - uses: anthropics/claude-code-action@v1
+        timeout-minutes: 30
         env:
           ANTHROPIC_BASE_URL: ${{ vars.ANTHROPIC_BASE_URL }}
         with:
@@ -110,5 +115,6 @@ jobs:
           git config --global user.email "claude[bot]@users.noreply.github.com"
           git config --global user.name "claude[bot]"
           git add -A trading
+          git status
           git commit -m "📈 AkTools MCP Server"
           git push

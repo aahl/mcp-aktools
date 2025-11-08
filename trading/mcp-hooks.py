@@ -15,7 +15,7 @@ mcp = FastMCP(name="mcp-hooks")
     description="保存交易结果",
 )
 def save_trading_result(
-    balance: str = Field(description="账户余额，单位: USD"),
+    balance: float = Field(description="账户余额，单位: USD"),
     workdir: str = Field(".", description="工作目录，默认当前目录"),
 ):
     if not balance:
@@ -36,12 +36,12 @@ def save_trading_result(
     with open(path, "w", encoding="utf-8") as file:
         json.dump(data, file, indent=2)
 
+    line = ",".join([str(x["balance"]) for x in balances])
     readme = os.path.join(workdir or ".", "README.md")
     if os.path.exists(readme):
         with open(readme, "r", encoding="utf-8") as file:
             content = file.read()
-        line = ",".join(balances)
-        re.sub(r"(\s+line\s+)\[[^]]*]", rf"\1[{line}]", content)
+        content = re.sub(r"(\s+line\s+)\[[^]]*]", rf"\1[{line}]", content)
         with open(readme, "w", encoding="utf-8") as file:
             file.write(content)
 

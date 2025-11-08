@@ -9,9 +9,6 @@ on:
         description: Prompt for Claude code
         default: ''
 
-permissions:
-  contents: write
-
 env:
   TRADING_PROMPT: |
     你是一个加密货币交易机器人，你需要先查看OKX账户信息、仓位状态及近期交易记录，然后分析行情，并根据投资建议做出相应的交易动作。
@@ -28,12 +25,18 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       id-token: write
+      contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
           persist-credentials: true
+
+      - name: Setup git identity
+        run: |
+          git config --global user.email "claude[bot]@users.noreply.github.com"
+          git config --global user.name "claude[bot]"
 
       - name: Install uv
         uses: astral-sh/setup-uv@v6
@@ -88,10 +91,11 @@ jobs:
         with:
           prompt: ${{ inputs.prompt || env.TRADING_PROMPT }}
           show_full_output: true
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           claude_code_oauth_token: ${{ secrets.ANTHROPIC_AUTH_TOKEN }}
           claude_args: |
             --mcp-config /tmp/mcp-config.json
-            --allowedTools "WebSearch,WebFetch,mcp__aktools,mcp__okx,mcp__notify,mcp__hooks"
+            --allowedTools "Edit,Bash(git:*),WebSearch,WebFetch,mcp__aktools,mcp__okx,mcp__notify,mcp__hooks"
           settings: |
             {
               "env": {
@@ -116,10 +120,8 @@ jobs:
 
       - name: Commit & Push
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_PA_TOKEN }}
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A trading
           git status
           git commit -m "📈 AkTools MCP Server" || echo "no changes to commit"

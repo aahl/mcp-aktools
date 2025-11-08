@@ -95,10 +95,18 @@ jobs:
                     "hooks": [
                       {
                         "type": "command",
-                        "command": "jq -r '\"\\(.tool_input.command)\"' | { read cmd; echo \"::notice::$cmd\" }"
+                        "command": "jq -r '\"\\(.tool_input.command)\"' 1>&2"
                       }
                     ]
                   }
                 ]
               }
             }
+
+      - name: Commit & Push
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add -A .
+          git commit -m "📈 AkTools MCP Server"
+          git push

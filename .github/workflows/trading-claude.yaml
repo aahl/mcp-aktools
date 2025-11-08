@@ -1,0 +1,124 @@
+name: Trading with Claude code
+
+on:
+  schedule:
+    - cron: '0 * * * *'
+  workflow_dispatch:
+    inputs:
+      prompt:
+        description: Prompt for Claude code
+        default: ''
+
+env:
+  TRADING_PROMPT: |
+    你是一个加密货币交易机器人，你需要先查看OKX账户信息、仓位状态及近期交易记录，然后分析行情，并根据投资建议做出相应的交易动作。
+    你只能交易这些交易对：BTC-USDT, ETH-USDT, SOL-USDT, ETH-BTC, SOL-BTC, SOL-ETH。
+    将分析、持仓、交易结果并推送到 Telegram 会话:
+    - 以AI模拟盘自动交易报告为标题
+    - 确保严格遵循工具`tg_markdown_rule`提供的Markdown格式
+    - 除了markdown语法外，`-`/`.`等都必须要用`\`转义
+    - 遇到报错`Can't parse entities`时转纯文本发送
+    使用工具`save_trading_result`保存结果。
+
+jobs:
+  trading:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: write
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: false
+
+      - name: Set up Python
+        run: uv python install
+
+      - name: Create MCP Config
+        run: |
+          cat > /tmp/mcp-config.json << 'EOF'
+          {
+            "mcpServers": {
+              "aktools": {
+                "command": "uvx",
+                "args": ["mcp-aktools"]
+              },
+              "okx": {
+                "command": "uvx",
+                "args": ["mcp-okx"],
+                "env": {
+                  "OKX_API_KEY": "${{ secrets.OKX_DEMO_API_KEY }}",
+                  "OKX_API_SECRET": "${{ secrets.OKX_DEMO_API_SECRET }}",
+                  "OKX_PASSPHRASE": "${{ secrets.OKX_DEMO_PASSPHRASE }}",
+                  "OKX_TRADE_FLAG": "1"
+                }
+              },
+              "notify": {
+                "command": "uvx",
+                "args": ["mcp-notify"],
+                "env": {
+                  "TELEGRAM_DEFAULT_CHAT": "${{ vars.TG_CHAT_MCPBTC }}",
+                  "TELEGRAM_BOT_TOKEN": "${{ secrets.TELEGRAM_BOT_TOKEN }}"
+                }
+              },
+              "hooks": {
+                "command": "uv",
+                "args": [
+                  "--directory", "${{ github.workspace }}/trading",
+                  "run", "mcp-hooks.py"
+                ]
+              }
+            }
+          }
+          EOF
+
+      - uses: anthropics/claude-code-action@v1
+        timeout-minutes: 30
+        env:
+          ANTHROPIC_BASE_URL: ${{ vars.ANTHROPIC_BASE_URL }}
+        with:
+          prompt: ${{ inputs.prompt || env.TRADING_PROMPT }}
+          show_full_output: true
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          claude_code_oauth_token: ${{ secrets.ANTHROPIC_AUTH_TOKEN }}
+          claude_args: |
+            --mcp-config /tmp/mcp-config.json
+            --allowedTools "Edit,Bash(git:*),WebSearch,WebFetch,mcp__aktools,mcp__okx,mcp__notify,mcp__hooks"
+          settings: |
+            {
+              "env": {
+                "ANTHROPIC_DEFAULT_OPUS_MODEL": "${{ vars.ANTHROPIC_DEFAULT_OPUS_MODEL }}",
+                "ANTHROPIC_DEFAULT_HAIKU_MODEL": "${{ vars.ANTHROPIC_DEFAULT_HAIKU_MODEL }}",
+                "ANTHROPIC_DEFAULT_SONNET_MODEL": "${{ vars.ANTHROPIC_DEFAULT_SONNET_MODEL }}"
+              },
+              "hooks": {
+                "PostToolUse": [
+                  {
+                    "matcher": "*",
+                    "hooks": [
+                      {
+                        "type": "command",
+                        "command": "jq -r '\"\\(.tool_input.command)\"' 1>&2"
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+
+      - name: Commit & Push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_PA_TOKEN }}
+        run: |
+          git config --global user.email "claude[bot]@users.noreply.github.com"
+          git config --global user.name "claude[bot]"
+          git add -A trading
+          git status
+          git commit -m "📈 AkTools MCP Server" || echo "no changes to commit"
+          git push

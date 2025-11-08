@@ -29,14 +29,8 @@ jobs:
     steps:
       - uses: actions/checkout@v5
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
           persist-credentials: true
-
-      - name: Setup git identity
-        run: |
-          git config --global user.email "claude[bot]@users.noreply.github.com"
-          git config --global user.name "claude[bot]"
 
       - name: Install uv
         uses: astral-sh/setup-uv@v6
@@ -122,6 +116,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GH_PA_TOKEN }}
         run: |
+          git config --global user.email "claude[bot]@users.noreply.github.com"
+          git config --global user.name "claude[bot]"
           git add -A trading
           git status
           git commit -m "📈 AkTools MCP Server" || echo "no changes to commit"

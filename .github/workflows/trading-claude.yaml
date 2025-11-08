@@ -9,6 +9,9 @@ on:
         description: Prompt for Claude code
         default: ''
 
+permissions:
+  contents: write
+
 env:
   TRADING_PROMPT: |
     你是一个加密货币交易机器人，你需要先查看OKX账户信息、仓位状态及近期交易记录，然后分析行情，并根据投资建议做出相应的交易动作。
@@ -25,12 +28,12 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       id-token: write
-      contents: write
     steps:
       - uses: actions/checkout@v5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
+          persist-credentials: true
 
       - name: Install uv
         uses: astral-sh/setup-uv@v6
@@ -119,5 +122,5 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A trading
           git status
-          git commit -m "📈 AkTools MCP Server"
+          git commit -m "📈 AkTools MCP Server" || echo "no changes to commit"
           git push

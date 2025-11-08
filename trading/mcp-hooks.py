@@ -18,6 +18,9 @@ def save_trading_result(
     balance: str = Field(description="账户余额，单位: USD"),
     workdir: str = Field(".", description="工作目录，默认当前目录"),
 ):
+    if not balance:
+        return "Balance is empty"
+
     path = os.path.join(workdir or ".", "demo.json")
     try:
         with open(path, "r", encoding="utf-8") as file:
@@ -42,7 +45,7 @@ def save_trading_result(
         with open(readme, "w", encoding="utf-8") as file:
             file.write(content)
 
-    return f"Saved to {path}"
+    return f"Saved to {os.path.abspath(path)}"
 
 
 mcp.run()

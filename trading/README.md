@@ -3,5 +3,5 @@
 ```mermaid
 xychart
     title "模拟盘余额"
-    line []
+    line [0]
 ```

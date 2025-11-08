@@ -23,6 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       id-token: write
+      contents: write
     steps:
       - uses: actions/checkout@v5
 
@@ -77,6 +78,7 @@ jobs:
           ANTHROPIC_BASE_URL: ${{ vars.ANTHROPIC_BASE_URL }}
         with:
           prompt: ${{ inputs.prompt || env.TRADING_PROMPT }}
+          show_full_output: true
           claude_code_oauth_token: ${{ secrets.ANTHROPIC_AUTH_TOKEN }}
           claude_args: |
             --mcp-config /tmp/mcp-config.json
@@ -105,8 +107,8 @@ jobs:
 
       - name: Commit & Push
         run: |
-          git config user.name github-actions
-          git config user.email github-actions@github.com
-          git add -A .
+          git config --global user.email "claude[bot]@users.noreply.github.com"
+          git config --global user.name "claude[bot]"
+          git add -A trading
           git commit -m "📈 AkTools MCP Server"
           git push

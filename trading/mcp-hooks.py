@@ -44,10 +44,13 @@ def save_trading_result(
     if isinstance(assets, str):
         try:
             assets = json.loads(assets)
-            if assets:
-                data["assets"] = assets
         except ValueError:
-            pass
+            assets = {}
+    if assets and isinstance(assets, dict):
+        data["assets"] = {
+            k: round(float(v), 1)
+            for k, v in assets.items()
+        }
 
     with open(path, "w", encoding="utf-8") as file:
         json.dump(data, file, indent=2)

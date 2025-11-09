@@ -34,9 +34,12 @@ jobs:
         with:
           enable-cache: false
 
-      - name: Set up Python
+      - name: Set up Python & Tools
         run: |
           uv python install
+          uv tool install -U mcp-aktools
+          uv tool install -U mcp-notify
+          uv tool install -U mcp-okx
           uv tool list
 
       - name: Create MCP Config
@@ -119,5 +122,5 @@ jobs:
           git config --global user.name "claude[bot]"
           git add -A trading
           git status
-          git commit -m "📈 AkTools MCP Server" || echo "no changes to commit"
+          git commit -m "📈 Auto Trading Result" || echo "no changes to commit"
           git push

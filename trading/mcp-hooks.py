@@ -11,11 +11,20 @@ _LOGGER.setLevel(logging.INFO)
 
 mcp = FastMCP(name="mcp-hooks")
 
+assets_schema = """资产明细，json格式，健为币种，值为美元价值，结构如下:
+{
+  "BTC": <float>,
+  "ETH": <float>,
+  ...
+}
+"""
+
 @mcp.tool(
     description="保存交易结果",
 )
 def save_trading_result(
-    balance: float = Field(description="账户余额，单位: USD"),
+    balance: float = Field(description="账户总余额美元价值，单位: USD"),
+    assets: dict | str = Field("{}", description=assets_schema),
 ):
     if not balance:
         return "Balance is empty"
@@ -32,6 +41,14 @@ def save_trading_result(
         "time": datetime.now().isoformat(),
         "balance": round(float(balance), 1),
     })
+    if isinstance(assets, str):
+        try:
+            assets = json.loads(assets)
+            if assets:
+                data["assets"] = assets
+        except ValueError:
+            pass
+
     with open(path, "w", encoding="utf-8") as file:
         json.dump(data, file, indent=2)
 

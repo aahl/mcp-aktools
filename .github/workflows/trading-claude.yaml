@@ -92,6 +92,7 @@ jobs:
           EOF
 
       - uses: anthropics/claude-code-action@v1
+        id: claude
         timeout-minutes: 30
         env:
           ANTHROPIC_BASE_URL: ${{ vars.ANTHROPIC_BASE_URL }}
@@ -127,7 +128,7 @@ jobs:
 
       - name: Commit & Push
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_PA_TOKEN }}
+          GITHUB_TOKEN: ${{ steps.claude.outputs.github_token || secrets.GH_PA_TOKEN }}
         run: |
           git config --global user.email "claude[bot]@users.noreply.github.com"
           git config --global user.name "claude[bot]"

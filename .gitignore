@@ -12,3 +12,4 @@ wheels/
 .idea
 .cache
 .DS_Store
+output.txt

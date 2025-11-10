@@ -77,7 +77,7 @@ def save_trading_result(
 xychart
     title "模拟盘余额"
     line [{line}]
-"""
+""".strip()
     if os.path.exists("./README.tpl.md"):
         with open("./README.tpl.md", "r", encoding="utf-8") as file:
             content = file.read()
@@ -88,7 +88,7 @@ xychart
         ]))
         content = content.replace("{trades}", "\n".join([
             f"{trade['time']} - {trade['text']}"
-            for trade in trades[0:10]
+            for trade in data.get("trades", [])[0:10]
         ]))
         with open("./README.md", "w", encoding="utf-8") as file:
             file.write(content)

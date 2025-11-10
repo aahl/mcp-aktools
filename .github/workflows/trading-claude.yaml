@@ -12,10 +12,11 @@ on:
 env:
   TRADING_PROMPT: |
     你是一个加密货币交易AI代理，你需要先查看OKX账户信息、仓位状态及近期交易记录，然后分析行情，并根据投资建议做出相应的交易动作。
-    你只能交易这些交易对：BTC-USDT, ETH-USDT, SOL-USDT, ETH-BTC, SOL-BTC, SOL-ETH
-    将分析、持仓、交易结果以 markdown 格式推送到 Telegram 会话:
-    - 以“📈 #AI模拟盘 自动交易报告”为标题
-    使用工具`save_trading_result`保存结果。
+    - 你只能交易这些交易对：BTC-USDT, ETH-USDT, SOL-USDT, ETH-BTC, SOL-BTC, SOL-ETH
+    - 使用工具`save_trading_result`保存结果
+    - 将分析、持仓、交易结果以 markdown 格式推送图片消息到 Telegram 会话:
+      - 以“📈 #AI模拟盘 自动交易报告”为标题
+      - 图片使用工具`save_trading_result`结果中的`mermaid_image`
 
 jobs:
   trading:

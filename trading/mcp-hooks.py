@@ -72,7 +72,7 @@ def save_trading_result(
     with open(path, "w", encoding="utf-8") as file:
         json.dump(data, file, indent=2, ensure_ascii=False)
 
-    line = ",".join([str(x["balance"]) for x in data["balances"]])
+    line = ",".join([str(round(x["balance"])) for x in data["balances"]])
     mermaid = f"""
 xychart
     title "模拟盘余额"
@@ -83,11 +83,11 @@ xychart
             content = file.read()
         content = content.replace("{mermaid}", mermaid)
         content = content.replace("{assets}", "\n".join([
-            f"**{k}**: {v}"
+            f"- **{k}**: ${v}"
             for k, v in data.get("assets", {}).items()
         ]))
         content = content.replace("{trades}", "\n".join([
-            f"{trade['time']} - {trade['text']}"
+            f"- {trade['time']} - {trade['text']}"
             for trade in data.get("trades", [])[0:10]
         ]))
         with open("./README.md", "w", encoding="utf-8") as file:

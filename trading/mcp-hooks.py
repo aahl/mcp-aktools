@@ -67,7 +67,7 @@ def save_trading_result(
                 "time": datetime.now().isoformat(),
                 "text": str(trade),
             })
-        data["trades"] = trades[0:100]
+        data["trades"] = lst[0:100]
 
     with open(path, "w", encoding="utf-8") as file:
         json.dump(data, file, indent=2)

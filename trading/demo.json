@@ -231,17 +231,23 @@
     {
       "time": "2025-11-10T06:30:56.868147",
       "balance": 128087.0
+    },
+    {
+      "time": "2025-11-10T07:27:26.359676",
+      "balance": 116906.0
     }
   ],
   "assets": {
-    "BTC": 42239.5,
-    "ETH": 29285.7,
-    "SOL": 1937.3,
-    "USDT": 67308.4,
-    "OKB": 12792.3,
-    "FIL": 269.1
+    "BTC": 0.0,
+    "ETH": 6.4,
+    "SOL": 0.0,
+    "USDT": 50506.0
   },
   "trades": [
+    {
+      "time": "2025-11-10T07:27:26.359694",
+      "text": "Buy 6.4 ETH at avg price $3617.9958, spent $23188.94"
+    },
     {
       "time": "2025-11-10T06:30:56.868173",
       "text": "Sold 3 SOL for market price, reducing exposure to overbought conditions"

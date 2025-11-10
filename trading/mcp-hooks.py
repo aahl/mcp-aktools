@@ -23,7 +23,8 @@ assets_schema = """资产明细，json格式，键为币种值为美元价值，
     description="保存交易结果",
 )
 def save_trading_result(
-    balance: float = Field(description="账户总余额美元价值，单位: USD"),
+    balance: float = Field(description="账户总余额美元价值，单位: USD"
+                                       "\nOKX数据位于工具`account_balance`返回的`totalEq`字段"),
     assets: dict | str = Field("{}", description=assets_schema),
     trades: list | str = Field("[]", description="本次新增的交易记录(英文)，如: [\"Buy 0.1 BTC, spent 10000 USDT\"]"),
 ):

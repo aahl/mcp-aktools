@@ -223,17 +223,31 @@
     {
       "time": "2025-11-10T05:19:42.203221",
       "balance": 128412.1
+    },
+    {
+      "time": "2025-11-10T05:43:54.431978",
+      "balance": 128062.5
     }
   ],
   "assets": {
-    "BTC": 42382.3,
-    "ETH": 29424.7,
-    "SOL": 273.1,
-    "USDT": 43234.3,
-    "OKB": 12823.8,
-    "FIL": 273.9
+    "BTC": 0.0,
+    "ETH": 1.0,
+    "SOL": 10.0,
+    "USDT": 42137.5
   },
   "trades": [
+    {
+      "time": "2025-11-10T05:43:54.432000",
+      "text": "Buy 10 SOL at 168 USDT limit order"
+    },
+    {
+      "time": "2025-11-10T05:43:54.431998",
+      "text": "Buy 1 ETH at 1400 USDT limit order"
+    },
+    {
+      "time": "2025-11-10T05:43:54.431995",
+      "text": "Buy 0.01 BTC at 100000 USDT limit order"
+    },
     {
       "time": "2025-11-10T05:19:42.203243",
       "text": "Buy SOL with 50 USDT"

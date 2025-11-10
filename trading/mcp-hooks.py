@@ -25,7 +25,7 @@ assets_schema = """资产明细，json格式，键为币种值为美元价值，
 def save_trading_result(
     balance: float = Field(description="账户总余额美元价值，单位: USD"),
     assets: dict | str = Field("{}", description=assets_schema),
-    trades: list | str = Field("[]", description="本次新增的交易记录，如: [\"买入0.1BTC，花费1000USDT\"]"),
+    trades: list | str = Field("[]", description="本次新增的交易记录(英文)，如: [\"Buy 0.1 BTC, spent 10000 USDT\"]"),
 ):
     if not balance:
         return "Balance is empty"
@@ -70,7 +70,7 @@ def save_trading_result(
         data["trades"] = lst[0:100]
 
     with open(path, "w", encoding="utf-8") as file:
-        json.dump(data, file, indent=2)
+        json.dump(data, file, indent=2, ensure_ascii=False)
 
     line = ",".join([str(x["balance"]) for x in data["balances"]])
     mermaid = f"""
@@ -95,7 +95,7 @@ xychart
 
     return {
         "path": os.path.abspath(path),
-        "mermaid_image": "https://mermaid.ink/img/" + base64.urlsafe_b64encode(mermaid.encode()).decode(),
+        "mermaid_image": "https://mermaid.ink/img/" + base64.urlsafe_b64encode(mermaid.encode()).decode() + "?theme=dark",
     }
 
 

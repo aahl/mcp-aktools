@@ -1,8 +1,6 @@
 name: Trading with Claude code
 
 on:
-  schedule:
-    - cron: '0 * * * *'
   workflow_dispatch:
     inputs:
       prompt:

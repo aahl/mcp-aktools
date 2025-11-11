@@ -1,29 +1,12 @@
 # 📈 AI模拟盘 自动交易报告
 
-```mermaid
-xychart
-    title "模拟盘余额"
-    line [123338,123402,123530,123592,123378,123745,123413,123853,123009,123040,122557,121938,122095,122599,122856,122597,122898,123160,123319,122719,122087,122454,122416,122685,122592,122907,122961,122776,122981,123295,123507,124403,125224,124894,125303,126088,126544,126534,126549,128335,128318,128318,128318,128318,128318,128424,128424,128424,128424,128424,128424,128424,128424,128424,128247,128412,128062,128087,127917,127901,128026,127611,128000,127850,126572,126770,127100,126971,127029,127783,128554,127765,127224,127064,127044,127009,127025,127004]
-```
+已迁移至单独的仓库[`ai-trading`](https://github.com/aahl/ai-trading/tree/trading)
 
-## 资产明细
-- **BTC**: $21873.0
-- **ETH**: $11457.9
-- **SOL**: $9539.6
-- **USDT**: $84133.3
-
-## 交易记录
-- 2025-11-11T10:23:50.622420 - Buy 20 SOL-USDT at market price, technical bounce play from oversold territory
-- 2025-11-11T10:23:50.622417 - Sell 2.465 ETH-USDT at market price, take profits due to liquidation risk
-- 2025-11-11T09:26:37.408898 - Buy 0.122 SOL at 163.97 USDT, spent 2000 USDT
-- 2025-11-11T08:28:55.010547 - Buy 50 SOL at 162 USDT limit order
-- 2025-11-11T08:28:55.010544 - Buy 0.1 BTC at 104500 USDT limit order
-- 2025-11-11T07:21:12.757565 - SOL holding: 35.6211, loss: 76.78 USDT (-1.29%)
-- 2025-11-11T07:21:12.757564 - ETH holding: 5.4653, loss reduced to -404.69 USDT (-1.33%)
-- 2025-11-11T07:21:12.757562 - BTC holding: 0.2080, profit: 190.02 USDT (+0.88%)
-- 2025-11-11T07:21:12.757559 - Sell 3 ETH for 10650 USDT (estimated)
-- 2025-11-11T07:03:19.611449 - Bought 150 SOL at ~165 USDT, spent ~24750 USDT
 
 ## 相关链接
 - https://t.me/s/mcpBtc
-- [工作流运行记录](https://github.com/aahl/mcp-aktools/actions/workflows/trading-claude.yaml)
+- [自动交易工作流配置文件](https://github.com/aahl/ai-trading/blob/main/.github/workflows/claude.yaml)
+- [自动交易工作流运行记录](https://github.com/aahl/ai-trading/actions/workflows/claude.yaml)
+- [智谱免费模型可用于 Claude Code](https://www.bigmodel.cn/invite?icode=EwilDKx13%2FhyODIyL%2BKabHHEaazDlIZGj9HxftzTbt4%3D)
+- [GLM Coding Plan·限时优惠](https://www.bigmodel.cn/claude-code?ic=WTOWFVEJXH)
+- [欧易模拟盘API密钥申请](https://www.okx.com/zh-hans/help/how-can-i-do-spot-trading-with-the-jupyter-notebook)

@@ -15,7 +15,7 @@ from .cache import CacheKey
 _LOGGER = logging.getLogger(__name__)
 _LOGGER.setLevel(logging.INFO)
 
-mcp = FastMCP(name="mcp-aktools", version="0.1.12")
+mcp = FastMCP(name="mcp-aktools", version="0.1.13")
 
 field_symbol = Field(description="股票代码")
 field_market = Field("sh", description="股票市场，仅支持: sh(上证), sz(深证), hk(港股), us(美股), 不支持加密货币")
@@ -137,12 +137,37 @@ def stock_news(
 ):
     news = list(dict.fromkeys([
         v["新闻内容"]
-        for v in ak_cache(ak.stock_news_em, symbol=symbol, ttl=3600).to_dict(orient="records")
+        for v in ak_cache(stock_news_em, symbol=symbol, ttl=3600).to_dict(orient="records")
         if isinstance(v, dict)
     ]))
     if news:
         return "\n".join(news[0:limit])
     return f"Not Found for {symbol}"
+
+def stock_news_em(symbol, limit=20):
+    cbk = "jQuery351013927587392975826_1763361926020"
+    resp = requests.get(
+        "http://search-api-web.eastmoney.com/search/jsonp",
+        headers={
+            "User-Agent": USER_AGENT,
+            "Referer": f"https://so.eastmoney.com/news/s?keyword={symbol}",
+        },
+        params={
+            "cb": cbk,
+            "param": '{"uid":"",'
+                     f'"keyword":"{symbol}",'
+                     '"type":["cmsArticleWebOld"],"client":"web","clientType":"web","clientVersion":"curr",'
+                     '"param":{"cmsArticleWebOld":{"searchScope":"default","sort":"default","pageIndex":1,"pageSize":10,'
+                     '"preTag":"<em>","postTag":"</em>"}}}',
+        },
+    )
+    text = resp.text.replace(cbk, "").strip().strip("()")
+    data = json.loads(text) or {}
+    dfs = pd.DataFrame(data.get("result", {}).get("cmsArticleWebOld") or [])
+    dfs.sort_values("date", ascending=False, inplace=True)
+    dfs = dfs.head(limit)
+    dfs["新闻内容"] = dfs["content"].str.replace(r"</?em>", "", regex=True)
+    return dfs
 
 
 @mcp.tool(

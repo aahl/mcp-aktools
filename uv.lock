@@ -1181,7 +1181,7 @@ wheels = [
 
 [[package]]
 name = "mcp-aktools"
-version = "0.1.14"
+version = "0.1.15"
 source = { editable = "." }
 dependencies = [
     { name = "akshare" },
@@ -1195,7 +1195,7 @@ requires-dist = [
     { name = "akshare", specifier = ">=1.17.0" },
     { name = "cachetools", specifier = ">=6.2.0" },
     { name = "diskcache", specifier = ">=5.6.0" },
-    { name = "fastmcp", specifier = ">=2.0.0" },
+    { name = "fastmcp", specifier = ">=2.0.0,<3.0.0" },
 ]
 
 [[package]]

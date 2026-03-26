@@ -7,12 +7,12 @@
     "url": "https://github.com/aahl/mcp-aktools",
     "source": "github"
   },
-  "version": "0.1.14",
+  "version": "0.1.15",
   "packages": [
     {
       "registryType": "pypi",
       "identifier": "mcp-aktools",
-      "version": "0.1.14",
+      "version": "0.1.15",
       "transport": {"type": "stdio"}
     },
     {

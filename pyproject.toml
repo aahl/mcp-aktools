@@ -1,6 +1,6 @@
 [project]
 name = "mcp-aktools"
-version = "0.1.14"
+version = "0.1.15"
 description = "MCP Server for stock and crypto"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -10,7 +10,7 @@ dependencies = [
     "akshare>=1.17.0",
     "cachetools>=6.2.0",
     "diskcache>=5.6.0",
-    "fastmcp>=2.0.0",
+    "fastmcp>=2.0.0,<3.0.0",
 ]
 
 [project.urls]

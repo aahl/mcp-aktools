@@ -135,9 +135,13 @@ def stock_news(
     symbol: str = Field(description="股票代码/加密货币符号"),
     limit: int = Field(15, description="返回数量(int)", strict=False),
 ):
+    news_data = ak_cache(stock_news_em, symbol=symbol, ttl=3600)
+    if news_data is None:
+        return f"News unavailable for {symbol}"
+
     news = list(dict.fromkeys([
         v["新闻内容"]
-        for v in ak_cache(stock_news_em, symbol=symbol, ttl=3600).to_dict(orient="records")
+        for v in news_data.to_dict(orient="records")
         if isinstance(v, dict)
     ]))
     if news:
